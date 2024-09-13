@@ -1,0 +1,11 @@
+1. Dropdown list for type.
+
+2. colour adjustments
+
+3. Location Display
+
+4. submit screen
+
+html body:
+background: linear-gradient(to bottom right, #a8e6cf, #dcedc1);
+

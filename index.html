@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Engagement Platform</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <img src="images/loading.gif" alt="Loading...">
+    </div>
+
+    <!-- Header Section -->
+    <header>
+        <h1>Citizen Engagement Platform</h1>
+        <nav>
+            <ul>
+                <li><a href="#report-issue">Report an Issue</a></li>
+                <li><a href="#suggest-improvement">Suggest an Improvement</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Current Address Section -->
+    <main>
+        <section class="address-box">
+            <h2>Current Address</h2>
+            <input type="text" id="current-address" value="Loading your address..." readonly />
+        </section>
+
+        <!-- Report an Issue Section -->
+        <section id="report-issue">
+            <h2>Report an Issue</h2>
+            <form id="issue-form">
+                <select name="issue-type" required>
+                    <option value="" disabled selected>Choose your type...</option>
+                    <option value="pothole">Pothole</option>
+                    <option value="traffic">Traffic</option>
+                    <option value="garbage">Garbage</option>
+                    <option value="streetlight">Street Light</option>
+                    <option value="water-leakage">Water Leakage</option>
+                    <option value="road-damage">Road Damage</option>
+                    <option value="other">Other</option>
+                </select>
+                <textarea name="description" placeholder="Describe the issue..." required></textarea>
+                <input type="file" name="upload-files" multiple accept="image/*, video/*">
+                <button type="submit">Submit</button>
+            </form>
+        </section>
+
+        <!-- Suggest an Improvement Section -->
+        <section id="suggest-improvement">
+            <h2>Suggest an Improvement</h2>
+            <form id="improvement-form">
+                <select name="improvement-type" required>
+                    <option value="" disabled selected>Choose your type...</option>
+                    <option value="park-upgrade">Park Upgrade</option>
+                    <option value="bike-lanes">Bike Lanes</option>
+                    <option value="sidewalk-improvement">Sidewalk Improvement</option>
+                    <option value="public-transport">Public Transport Enhancement</option>
+                    <option value="other">Other</option>
+                </select>
+                <textarea name="improvement-description" placeholder="Describe your improvement suggestion..." required></textarea>
+                <button type="submit">Submit</button>
+            </form>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            const issueForm = document.getElementById('issue-form');
+            const improvementForm = document.getElementById('improvement-form');
+
+            // Hide loading screen initially
+            loadingScreen.style.display = 'none';
+
+            // Function to show loading screen and refresh page
+            function showLoadingScreen(event) {
+                event.preventDefault(); // Prevent form from submitting immediately
+
+                // Show the loading screen
+                loadingScreen.style.display = 'flex'; 
+
+                // Simulate loading for 3 seconds, then refresh the page
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none'; // Hide loading screen after timeout
+                    window.location.reload(); // Refresh the page
+                }, 3000); // 3 seconds
+            }
+
+            // Attach the loading screen to both forms' submit events
+            issueForm.addEventListener('submit', showLoadingScreen);
+            improvementForm.addEventListener('submit', showLoadingScreen);
+        });
+    </script>
+</body>
+</html>
