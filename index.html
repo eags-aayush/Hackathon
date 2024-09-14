@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Citizen Engagement Platform</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
 
@@ -29,6 +30,11 @@
         <section class="address-box">
             <h2>Current Address</h2>
             <input type="text" id="current-address" value="Loading your address..." readonly />
+        </section>
+
+        <!-- Map Section -->
+        <section id="map-container">
+            <div id="map"></div>
         </section>
 
         <!-- Report an Issue Section -->
@@ -70,33 +76,8 @@
 
     </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const loadingScreen = document.getElementById('loading-screen');
-            const issueForm = document.getElementById('issue-form');
-            const improvementForm = document.getElementById('improvement-form');
-
-            // Hide loading screen initially
-            loadingScreen.style.display = 'none';
-
-            // Function to show loading screen and refresh page
-            function showLoadingScreen(event) {
-                event.preventDefault(); // Prevent form from submitting immediately
-
-                // Show the loading screen
-                loadingScreen.style.display = 'flex'; 
-
-                // Simulate loading for 3 seconds, then refresh the page
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none'; // Hide loading screen after timeout
-                    window.location.reload(); // Refresh the page
-                }, 3000); // 3 seconds
-            }
-
-            // Attach the loading screen to both forms' submit events
-            issueForm.addEventListener('submit', showLoadingScreen);
-            improvementForm.addEventListener('submit', showLoadingScreen);
-        });
-    </script>
+    <!-- Leaflet JS for map -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
