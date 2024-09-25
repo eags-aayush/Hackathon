@@ -5,14 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Citizen Engagement Platform</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
 <body>
-
-    <!-- Loading Screen -->
-    <div id="loading-screen">
-        <img src="images/loading.gif" alt="Loading...">
-    </div>
 
     <!-- Header Section -->
     <header>
@@ -33,8 +29,9 @@
         </section>
 
         <!-- Map Section -->
-        <section id="map-container">
-            <div id="map"></div>
+        <section id="map-section">
+            <h2>Your Location and Reports</h2>
+            <div id="map" style="height: 400px;"></div>
         </section>
 
         <!-- Report an Issue Section -->
@@ -73,11 +70,69 @@
                 <button type="submit">Submit</button>
             </form>
         </section>
-
     </main>
 
-    <!-- Leaflet JS for map -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="script.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- JavaScript for Map and Location -->
+    <script>
+        // Get User's Live Location
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showMap, showError);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        // Display Map with Markers
+        function showMap(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            // Initialize Map
+            const map = L.map('map').setView([lat, lng], 13);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add marker for user's current location
+            const userMarker = L.marker([lat, lng]).addTo(map)
+                .bindPopup("You are here").openPopup();
+
+            // Add markers for issue and suggestion (example locations)
+            const issueMarker = L.marker([lat + 0.01, lng + 0.01]).addTo(map)
+                .bindPopup("Reported Issue: Pothole on the road");
+            const suggestionMarker = L.marker([lat - 0.01, lng - 0.01]).addTo(map)
+                .bindPopup("Suggested Improvement: New bike lanes");
+
+            // Display user's address (using an example here, you'll need to reverse geocode for real data)
+            document.getElementById("current-address").value = `Lat: ${lat}, Lng: ${lng}`;
+        }
+
+        // Handle errors in getting location
+        function showError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("User denied the request for Geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("An unknown error occurred.");
+                    break;
+            }
+        }
+
+        // Trigger location fetching when the page loads
+        window.onload = getLocation;
+    </script>
 </body>
 </html>
