@@ -1,87 +1,56 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loadingScreen = document.getElementById('loading-screen');
-    const addressInput = document.getElementById('current-address');
     const issueForm = document.getElementById('issue-form');
     const improvementForm = document.getElementById('improvement-form');
+    const mapContainer = L.map('map').setView([51.505, -0.09], 13); // Default center
 
-    // Initially hide the loading screen
+    // Hide loading screen initially
     loadingScreen.style.display = 'none';
 
-    // Initialize the Leaflet.js map
-    const map = L.map('map').setView([51.505, -0.09], 13); // Default center (London for example)
-    
+    // Initialize the map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(mapContainer);
 
-    // Check for geolocation support and get the user's location
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
+    let userMarker, issueMarker, suggestionMarker;
 
-            // Update the map view to the user's location
-            map.setView([lat, lng], 13);
+    // Function to set the user's live location
+    function setUserLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const { latitude, longitude } = position.coords;
 
-            // Display user's coordinates in the address input box
-            addressInput.value = `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`;
+                // Add marker at user's current location
+                userMarker = L.marker([latitude, longitude]).addTo(mapContainer)
+                    .bindPopup('You are here')
+                    .openPopup();
 
-            // Add a marker to show user's current location
-            L.marker([lat, lng]).addTo(map)
-                .bindPopup('Your current location').openPopup();
-        }, error => {
-            console.error("Error getting location: ", error);
-            addressInput.value = "Unable to retrieve your location.";
-        });
-    } else {
-        addressInput.value = "Geolocation is not supported by your browser.";
+                // Center map on the user's location
+                mapContainer.setView([latitude, longitude], 13);
+            });
+        } else {
+            alert('Geolocation is not supported by this browser.');
+        }
     }
 
-    // Function to add a marker for an issue
-    function addIssueMarker(lat, lng, description) {
-        L.marker([lat, lng]).addTo(map)
-            .bindPopup(`<b>Issue:</b> ${description}`)
-            .openPopup();
-    }
+    // Function to show loading screen and refresh page
+    function showLoadingScreen(event) {
+        event.preventDefault(); // Prevent form from submitting immediately
 
-    // Function to add a marker for an improvement
-    function addImprovementMarker(lat, lng, description) {
-        L.marker([lat, lng]).addTo(map)
-            .bindPopup(`<b>Improvement:</b> ${description}`)
-            .openPopup();
-    }
+        // Show the loading screen
+        loadingScreen.style.display = 'flex';
 
-    // Show the loading screen for 3 seconds and then hide it
-    function showLoadingScreen() {
-        loadingScreen.style.display = 'flex'; // Show the loading screen
+        // Simulate loading for 3 seconds, then refresh the page
         setTimeout(() => {
-            loadingScreen.style.display = 'none'; // Hide after 3 seconds
-        }, 3000);
+            loadingScreen.style.display = 'none'; // Hide loading screen after timeout
+            window.location.reload(); // Refresh the page
+        }, 3000); // 3 seconds
     }
 
-    // Handle Issue Form Submission
-    issueForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        showLoadingScreen(); // Show loading screen on form submission
+    // Attach the loading screen to both forms' submit events
+    issueForm.addEventListener('submit', showLoadingScreen);
+    improvementForm.addEventListener('submit', showLoadingScreen);
 
-        const lat = map.getCenter().lat; // Example using map's current center
-        const lng = map.getCenter().lng;
-        const description = e.target.elements['description'].value;
-
-        // Add marker to the map
-        addIssueMarker(lat, lng, description);
-    });
-
-    // Handle Improvement Form Submission
-    improvementForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        showLoadingScreen(); // Show loading screen on form submission
-
-        const lat = map.getCenter().lat; // Example using map's current center
-        const lng = map.getCenter().lng;
-        const description = e.target.elements['improvement-description'].value;
-
-        // Add marker to the map
-        addImprovementMarker(lat, lng, description);
-    });
+    // Trigger the user's location when the page loads
+    setUserLocation();
 });
