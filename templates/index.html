@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Citizen Engagement Platform</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 </head>
 <body>
@@ -26,12 +25,6 @@
         <section class="address-box">
             <h2>Current Address</h2>
             <input type="text" id="current-address" value="Loading your address..." readonly />
-        </section>
-
-        <!-- Map Section -->
-        <section id="map-section">
-            <h2>Your Location and Reports</h2>
-            <div id="map" style="height: 400px;"></div>
         </section>
 
         <!-- Report an Issue Section -->
@@ -70,12 +63,28 @@
                 <button type="submit">Submit</button>
             </form>
         </section>
+
+        <!-- Map Section -->
+        <section id="map-section">
+            <h2>Your Location and Reports</h2>
+            <div id="map" style="height: 400px;"></div>
+        </section>
     </main>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <!-- JavaScript for Map and Location -->
     <script>
+        let userMarker;
+        const issueForm = document.getElementById('issue-form');
+        const improvementForm = document.getElementById('improvement-form');
+        const mapContainer = L.map('map').setView([51.505, -0.09], 13); // Default center
+
+        // Initialize the map
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(mapContainer);
+
         // Get User's Live Location
         function getLocation() {
             if (navigator.geolocation) {
@@ -90,27 +99,18 @@
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
 
-            // Initialize Map
-            const map = L.map('map').setView([lat, lng], 13);
-
-            // Add OpenStreetMap tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
+            // Center map on the user's location
+            mapContainer.setView([lat, lng], 13);
 
             // Add marker for user's current location
-            const userMarker = L.marker([lat, lng]).addTo(map)
+            userMarker = L.marker([lat, lng]).addTo(mapContainer)
                 .bindPopup("You are here").openPopup();
 
-            // Add markers for issue and suggestion (example locations)
-            const issueMarker = L.marker([lat + 0.01, lng + 0.01]).addTo(map)
-                .bindPopup("Reported Issue: Pothole on the road");
-            const suggestionMarker = L.marker([lat - 0.01, lng - 0.01]).addTo(map)
-                .bindPopup("Suggested Improvement: New bike lanes");
-
-            // Display user's address (using an example here, you'll need to reverse geocode for real data)
+            // Display user's address
             document.getElementById("current-address").value = `Lat: ${lat}, Lng: ${lng}`;
+
+            // Load existing issues from the database
+            loadExistingIssues();
         }
 
         // Handle errors in getting location
@@ -131,7 +131,78 @@
             }
         }
 
-        // Trigger location fetching when the page loads
+        // Load existing issues and display them on the map
+        function loadExistingIssues() {
+            fetch('/get-issues')
+                .then(response => response.json())
+                .then(issues => {
+                    issues.forEach(issue => {
+                        const [lat, lng, type, description] = issue;
+                        L.marker([lat, lng]).addTo(mapContainer)
+                            .bindPopup(`${type}: ${description}`);
+                    });
+                });
+        }
+
+        // Handle form submission for issues
+        issueForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const issueData = {
+                latitude: userMarker.getLatLng().lat,
+                longitude: userMarker.getLatLng().lng,
+                issue_type: issueForm.elements['issue-type'].value,
+                description: issueForm.elements['description'].value
+            };
+
+            // Send data to the backend
+            fetch('/submit-issue', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(issueData)
+            }).then(response => {
+                if (response.ok) {
+                    alert('Issue submitted successfully!');
+                    // Refresh the map markers
+                    loadExistingIssues();
+                } else {
+                    alert('Failed to submit issue.');
+                }
+            });
+        });
+
+        // Handle form submission for improvements
+        improvementForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const improvementData = {
+                latitude: userMarker.getLatLng().lat,
+                longitude: userMarker.getLatLng().lng,
+                improvement_type: improvementForm.elements['improvement-type'].value,
+                description: improvementForm.elements['improvement-description'].value
+            };
+
+            // Send data to the backend
+            fetch('/submit-improvement', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(improvementData)
+            }).then(response => {
+                if (response.ok) {
+                    alert('Improvement suggestion submitted successfully!');
+                    // Refresh the map markers
+                    loadExistingIssues();
+                } else {
+                    alert('Failed to submit improvement suggestion.');
+                }
+            });
+        });
+
+        // Get user's location when the page loads
         window.onload = getLocation;
     </script>
 </body>
