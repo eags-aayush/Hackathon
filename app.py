@@ -1,40 +1,63 @@
-from flask import Flask, request, redirect, url_for
-import os
+from flask import Flask, render_template, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///issues.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
-# Configure upload folder
-UPLOAD_FOLDER = 'uploads/'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+class Issue(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    issue_type = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.String(200), nullable=False)
 
-@app.route('/report-issue', methods=['POST'])
-def report_issue():
-    description = request.form['issue-description']
-    latitude = request.form['latitude']
-    longitude = request.form['longitude']
-    
-    # Handle file uploads
-    if 'issue-image' in request.files:
-        image = request.files['issue-image']
-        if image.filename != '':
-            image.save(os.path.join(app.config['UPLOAD_FOLDER'], image.filename))
-    
-    if 'issue-video' in request.files:
-        video = request.files['issue-video']
-        if video.filename != '':
-            video.save(os.path.join(app.config['UPLOAD_FOLDER'], video.filename))
-    
-    # Process and save the issue data and location
-    # For example, save to a database or file (implementation depends on your needs)
-    # For now, we'll just print the data
-    print(f"Issue Description: {description}")
-    print(f"Location: Latitude {latitude}, Longitude {longitude}")
+class Improvement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    improvement_type = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.String(200), nullable=False)
 
-    return redirect(url_for('success'))
+# Create database tables
+with app.app_context():
+    db.create_all()
 
-@app.route('/success')
-def success():
-    return 'Issue reported successfully!'
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/submit-issue', methods=['POST'])
+def submit_issue():
+    data = request.get_json()
+    new_issue = Issue(
+        latitude=data['latitude'],
+        longitude=data['longitude'],
+        issue_type=data['issue_type'],
+        description=data['description']
+    )
+    db.session.add(new_issue)
+    db.session.commit()
+    return jsonify(success=True)
+
+@app.route('/submit-improvement', methods=['POST'])
+def submit_improvement():
+    data = request.get_json()
+    new_improvement = Improvement(
+        latitude=data['latitude'],
+        longitude=data['longitude'],
+        improvement_type=data['improvement_type'],
+        description=data['description']
+    )
+    db.session.add(new_improvement)
+    db.session.commit()
+    return jsonify(success=True)
+
+@app.route('/get-issues', methods=['GET'])
+def get_issues():
+    issues = Issue.query.all()
+    return jsonify([[issue.latitude, issue.longitude, issue.issue_type, issue.description] for issue in issues])
 
 if __name__ == '__main__':
     app.run(debug=True)
