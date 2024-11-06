@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Engagement Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+</head>
+<body>
+    <header>
+        <h1>Citizen Engagement Platform</h1>
+        <nav>
+            <ul>
+                <li><a href="#report-issue">Report an Issue</a></li>
+                <li><a href="#suggest-improvement">Suggest an Improvement</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="address-box">
+            <h2>Current Address</h2>
+            <input type="text" id="current-address" value="Loading your address..." readonly />
+        </section>
+
+        <section id="report-issue">
+            <h2>Report an Issue</h2>
+            <form id="issue-form">
+                <select name="issue-type" required>
+                    <option value="" disabled selected>Choose your type...</option>
+                    <option value="pothole">Pothole</option>
+                    <option value="traffic">Traffic</option>
+                    <option value="garbage">Garbage</option>
+                    <option value="streetlight">Street Light</option>
+                    <option value="water-leakage">Water Leakage</option>
+                    <option value="road-damage">Road Damage</option>
+                    <option value="other">Other</option>
+                </select>
+                <textarea name="description" placeholder="Describe the issue..." required></textarea>
+                <input type="file" name="upload-files" multiple accept="image/*, video/*">
+                <button type="submit">Submit</button>
+            </form>
+        </section>
+
+        <section id="suggest-improvement">
+            <h2>Suggest an Improvement</h2>
+            <form id="improvement-form">
+                <select name="improvement-type" required>
+                    <option value="" disabled selected>Choose your type...</option>
+                    <option value="park-upgrade">Park Upgrade</option>
+                    <option value="bike-lanes">Bike Lanes</option>
+                    <option value="sidewalk-improvement">Sidewalk Improvement</option>
+                    <option value="public-transport">Public Transport Enhancement</option>
+                    <option value="other">Other</option>
+                </select>
+                <textarea name="improvement-description" placeholder="Describe your improvement suggestion..." required></textarea>
+                <button type="submit">Submit</button>
+            </form>
+        </section>
+
+        <section id="map-section">
+            <h2>Your Location and Reports</h2>
+            <div id="map" style="height: 400px;"></div>
+        </section>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="static/scripts.js"></script>
+</body>
+</html>
